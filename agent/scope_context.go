@@ -81,7 +81,7 @@ func (t *ToolSet) getTaskScope() actool.CoreTool {
 		obj(map[string]any{
 			"offset":    intp("从 0 开始的偏移，默认 0"),
 			"page_size": intp("每页条数，默认 10，最大 20"),
-			"revision":  str("可选：摘要或上一页的 revision；不一致则拒绝混合新旧页"),
+			"revision":  str("摘要或上一页的 revision；offset>0 时必填，不一致则拒绝混合新旧页"),
 		}),
 		func(_ context.Context, in json.RawMessage) (actool.Result, error) {
 			if t.as == nil || t.taskID <= 0 {
@@ -97,6 +97,9 @@ func (t *ToolSet) getTaskScope() actool.CoreTool {
 			}
 			if args.Offset < 0 || args.PageSize < 0 {
 				return actool.Errorf("offset/page_size 不得为负数"), nil
+			}
+			if args.Offset > 0 && args.Revision == "" {
+				return actool.Errorf("后续分页必须携带摘要或第一页的 revision；请从 offset=0 开始读取"), nil
 			}
 			if args.PageSize == 0 {
 				args.PageSize = 10

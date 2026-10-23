@@ -115,7 +115,7 @@ func TestTaskScopeToolSurvivesDisabledCoverageAndChanges(t *testing.T) {
 	if after["revision"] == before["revision"] {
 		t.Fatal("new round retained stale context")
 	}
-	for _, input := range []string{`{"offset":-1}`, `{"page_size":-1}`, `[]`} {
+	for _, input := range []string{`{"offset":-1}`, `{"page_size":-1}`, `{"offset":1}`, `[]`} {
 		result, err := tool.Call(context.Background(), json.RawMessage(input), nil)
 		if err != nil {
 			t.Fatal(err)

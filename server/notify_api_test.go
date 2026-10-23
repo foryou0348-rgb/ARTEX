@@ -85,8 +85,22 @@ func newNotifyFixture(t *testing.T) *notifyFixture {
 			t.Logf("清理通知事件失败: %v", err)
 		}
 	})
-	// 总开关必须是开的（其它用例可能关过它）。
-	if err := pg.SetBool(settingNotifyEnabled, true); err != nil {
+	// These tests drive one channel synchronously. Other server fixtures may
+	// still have a background notifier polling this shared test DB; letting it
+	// deliver here races the manual step (e.g. two digest messages instead of one).
+	// The channel-level methods above do not consult this global polling switch.
+	previous, existed, err := pg.GetSetting(settingNotifyEnabled)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if existed {
+			_ = pg.SetSetting(settingNotifyEnabled, previous)
+		} else {
+			_, _ = pg.Exec(`DELETE FROM settings WHERE key=$1`, settingNotifyEnabled)
+		}
+	})
+	if err := pg.SetBool(settingNotifyEnabled, false); err != nil {
 		t.Fatal(err)
 	}
 	return f

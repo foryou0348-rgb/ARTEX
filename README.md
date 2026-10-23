@@ -425,6 +425,8 @@ sequenceDiagram
 {"judge":{"base_url":"https://your-provider.example/v1","model":"your-model-id","api_key":"your-private-api-key"}}
 ```
 
+如运行环境需要显式代理，可在 `judge` 内加 `"proxy":"http://your-proxy:port"`，与应用现有代理配置语义一致；不需要代理时省略。
+
 再在同一页面的 **Variables** 添加 `ARTEX_RUN_LIVE_REVIEW`，值为 `true`。随后推送到 `develop` 时会额外执行 `live-model-review`；普通 PR 不使用模型密钥。删除该变量或改为 `false` 即关闭。开启后若密钥配置缺失或模型测试被跳过，该任务会明确失败。配置仅写入运行器的私有临时文件，结束后删除，不放进源码或上传为构建产物。
 
 ### 任务范围上下文（独立于覆盖率）

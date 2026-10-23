@@ -26,6 +26,7 @@ func TestLiveContextReview(t *testing.T) {
 			BaseURL string `json:"base_url"`
 			APIKey  string `json:"api_key"`
 			Model   string `json:"model"`
+			Proxy   string `json:"proxy"`
 		} `json:"judge"`
 	}
 	b, err := os.ReadFile(path)
@@ -35,7 +36,7 @@ func TestLiveContextReview(t *testing.T) {
 	if json.Unmarshal(b, &cfg) != nil || cfg.Judge.APIKey == "" {
 		t.Fatal("invalid live model config")
 	}
-	provider, err := (agent.Config{Format: llm.FormatOpenAI, BaseURL: cfg.Judge.BaseURL, APIKey: cfg.Judge.APIKey, Model: cfg.Judge.Model}).NewProvider()
+	provider, err := (agent.Config{Format: llm.FormatOpenAI, BaseURL: cfg.Judge.BaseURL, APIKey: cfg.Judge.APIKey, Model: cfg.Judge.Model, Proxy: cfg.Judge.Proxy}).NewProvider()
 	if err != nil {
 		t.Fatal("cannot create live review provider")
 	}

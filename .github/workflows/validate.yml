@@ -101,3 +101,49 @@ jobs:
           assert 'images: mianhuatang11/artex' in release
           assert 'image: mianhuatang11/artex:' in compose
           PY
+
+  live-model-review:
+    # Only trusted develop pushes may use paid model credentials; PRs never do.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop' && vars.ARTEX_RUN_LIVE_REVIEW == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Prepare private model configuration
+        env:
+          LIVE_CONFIG_JSON: ${{ secrets.ARTEX_REVIEW_LIVE_CONFIG_JSON }}
+        run: |
+          python3 - <<'PYCONFIG'
+          import json, os, pathlib, sys
+          try:
+              config = json.loads(os.environ.get('LIVE_CONFIG_JSON', ''))
+              judge = config['judge']
+              if not isinstance(judge, dict) or not all(isinstance(judge.get(k), str) and judge[k].strip() for k in ('base_url', 'api_key', 'model')):
+                  raise ValueError()
+          except (ValueError, KeyError, TypeError):
+              sys.exit('Set ARTEX_REVIEW_LIVE_CONFIG_JSON to a valid judge config with base_url, api_key and model.')
+          path = pathlib.Path(os.environ['RUNNER_TEMP']) / 'artex-review-live.json'
+          fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+          with os.fdopen(fd, 'w') as file:
+              json.dump(config, file)
+          with open(os.environ['GITHUB_ENV'], 'a') as file:
+              file.write('ARTEX_REVIEW_LIVE_CONFIG=' + str(path) + '\n')
+          PYCONFIG
+      - name: Run synthetic model review regression
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -count=1 -timeout 8m -json ./server -run '^TestLiveContextReview$' | tee live-review-results.jsonl
+          python3 - <<'PYRESULT'
+          import json, pathlib, sys
+          events = [json.loads(line) for line in pathlib.Path('live-review-results.jsonl').read_text().splitlines()]
+          if not any(e.get('Test') == 'TestLiveContextReview' and e.get('Action') == 'pass' for e in events):
+              sys.exit('Live model review did not pass; skipped tests are not accepted.')
+          PYRESULT
+      - name: Remove private configuration
+        if: always()
+        run: rm -f "$RUNNER_TEMP/artex-review-live.json"

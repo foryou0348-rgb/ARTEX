@@ -415,6 +415,18 @@ sequenceDiagram
   EV-->>P: 再次唤醒(闭环)
 ```
 
+### 可选真实模型回归（GitHub Actions）
+
+`validate` 可额外运行 `TestLiveContextReview` 的 8 个合成审查用例，只提交审查文本，不执行用例中的命令。这是审查器回归，不是完整任务或范围改进的效果评测；模型调用按供应商计费。
+
+在仓库 **Settings → Secrets and variables → Actions** 添加 Repository secret `ARTEX_REVIEW_LIVE_CONFIG_JSON`，内容如下（替换成自己的 OpenAI Chat Completions 兼容端点、模型和密钥）：
+
+```json
+{"judge":{"base_url":"https://your-provider.example/v1","model":"your-model-id","api_key":"your-private-api-key"}}
+```
+
+再在同一页面的 **Variables** 添加 `ARTEX_RUN_LIVE_REVIEW`，值为 `true`。随后推送到 `develop` 时会额外执行 `live-model-review`；普通 PR 不使用模型密钥。删除该变量或改为 `false` 即关闭。开启后若密钥配置缺失或模型测试被跳过，该任务会明确失败。配置仅写入运行器的私有临时文件，结束后删除，不放进源码或上传为构建产物。
+
 ### 任务范围上下文（独立于覆盖率）
 
 `graph_overview.task_scope` 每轮提供只读摘要：关联企业、当前任务的操作约束、当前与直接关联任务的范围来源及内容版本 `revision`。关闭覆盖率统计不会隐藏它。摘要最多预览 8 条记录和 8 个企业引用，长文本截断会明确标记；它不恢复旧版 `coverage.scope` 的全量展开。

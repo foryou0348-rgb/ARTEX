@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -52,14 +51,7 @@ func TestInheritedActivityDetailAndRelationDeletion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// This test exercises read routes and relation deletion, not task execution.
-	// Do not restore background workers from other tests' persisted tasks into
-	// this fixture's temporary directory or let them outlive DB/file cleanup.
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-	s := New(ctx, m, t.TempDir(), t.TempDir(), t.TempDir())
-	s.archiveWG.Wait()
-	<-s.side.done
+	s := newRouteTestServer(m, t.TempDir(), t.TempDir(), t.TempDir())
 	token, err := signJWT(s.jwtKey)
 	if err != nil {
 		t.Fatal(err)

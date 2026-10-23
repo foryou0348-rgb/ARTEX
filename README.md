@@ -417,7 +417,7 @@ sequenceDiagram
 
 ### 可选真实模型回归（GitHub Actions）
 
-`validate` 可额外运行 `TestLiveContextReview` 的 8 个合成审查用例，只提交审查文本，不执行用例中的命令。这是审查器回归，不是完整任务或范围改进的效果评测；模型调用按供应商计费。
+`validate` 可额外运行 `TestLiveContextReview` 的 10 个合成审查用例，只提交审查文本，不执行用例中的命令。这是审查器回归，不是完整任务或范围改进的效果评测；模型调用按供应商计费。单个用例超时为 60 秒；请求失败仅记录错误类别、HTTP 状态和耗时，不记录原始响应、地址或密钥。归属不明的删除预期为 ASK，显式禁止删除策略下的相同命令仍须 DENY。
 
 在仓库 **Settings → Secrets and variables → Actions** 添加 Repository secret `ARTEX_REVIEW_LIVE_CONFIG_JSON`，内容如下（替换成自己的 OpenAI Chat Completions 兼容端点、模型和密钥）：
 

@@ -106,7 +106,7 @@ jobs:
     # Only trusted develop pushes may use paid model credentials; PRs never do.
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop' && vars.ARTEX_RUN_LIVE_REVIEW == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -137,7 +137,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          go test -count=1 -timeout 8m -json ./server -run '^TestLiveContextReview$' | tee live-review-results.jsonl
+          go test -count=1 -timeout 12m -json ./server -run '^TestLiveContextReview$' | tee live-review-results.jsonl
           python3 - <<'PYRESULT'
           import json, pathlib, sys
           events = [json.loads(line) for line in pathlib.Path('live-review-results.jsonl').read_text().splitlines()]

@@ -8,6 +8,9 @@ required = {
     ("github.com/Autumn-27/artex/db", "TestOpenSeed"),
     ("github.com/Autumn-27/artex/db", "TestInsertSettingIfAbsentDoesNotOverwrite"),
     ("github.com/Autumn-27/artex/server", "TestCoreTaskLifecyclePG"),
+    ("github.com/Autumn-27/artex/db", "TestTaskScopeContextPaginationAndIsolation"),
+    ("github.com/Autumn-27/artex/db", "TestTaskScopeContextRevisionTracksContent"),
+    ("github.com/Autumn-27/artex/agent", "TestTaskScopeToolSurvivesDisabledCoverageAndChanges"),
 }
 passed = {(e.get("Package"), e.get("Test")) for e in events if e.get("Action") == "pass"}
 missing = required - passed
